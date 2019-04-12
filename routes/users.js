@@ -33,8 +33,6 @@ router.post('/register', (req, res) =>
     const username = req.body.username
     const password = req.body.password
 
-    console.log(user.getUserByUsername(username))
-
     db.query(user.getUserByUsername(username), (error, result) =>
     {
         if(error) throw error
@@ -44,15 +42,13 @@ router.post('/register', (req, res) =>
             // Creating user and storing salt hashed password
             bcrypt.hash(password, 12, (err, hash) =>
             {
-                db.query(`INSERT INTO user_account(username, pswd_hash) 
-                VALUES ('${username}', '${hash}') RETURNING username;`, 
-                (error, result) =>
+                db.query(user.createUser(username, hash), (error, result) =>
                 {
                     if(error) throw error
-                    console.log(result.rows[0])
                     res.json({
                         status: "ok",
-                        message: result.rows[0]
+                        message: 
+                        `Created user with username: ${result.rows[0].username}`
                     })
                 })
             })
@@ -72,8 +68,7 @@ router.post('/login', (req, res) =>
     const password = req.body.password
 
     // verify user
-    db.query(`SELECT pswd_hash FROM user_account WHERE username = '${username}'`, 
-    (err, result) => 
+    db.query(user.getPswdByUsername(username), (err, result) => 
     {
         if(err) throw err
         if(result.rows.length > 0) {

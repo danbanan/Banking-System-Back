@@ -8,29 +8,22 @@ const createTable = {
     );`
 }
 
-const createUser = {
-    name: 'insert-new-user',
-    text:
-    `INSERT INTO user_account(username, pswd_hash) 
-    VALUES ('$1', '$2') RETURNING username;`
+const createUser = (username, hash) => {
+    return `INSERT INTO user_account(username, pswd_hash) 
+    VALUES ('${username}', '${hash}') RETURNING username;`
 }
 
 const getUserByUsername = (username) => {
     return (`SELECT * FROM user_account WHERE username = '${username}'`)
 }
 
-
-// const getUserByUsername = {
-//     name: 'get-user-by-username',
-//     text: 'SELECT * FROM user_account WHERE username = $1'
-// }
-
-const getPswdByUsername = {
-
+const getPswdByUsername = (username) => {
+    return `SELECT pswd_hash FROM user_account WHERE username = '${username}'`
 }
 
 module.exports = {
     createTable,
     createUser,
-    getUserByUsername
+    getUserByUsername,
+    getPswdByUsername
 }
