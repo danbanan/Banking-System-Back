@@ -1,64 +1,126 @@
 const express = require('express')
-const router = express.Router()
-// const User = require('../models/user')
-const passport = require('passport')
+const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-const client = require('../config/database')
+const moment = require('moment');
+const db = require('../db/db-module')
+const VerifyToken = require('../auth/VerifyToken')
+const user = require('../db/sql/user-account-sql')
 
-// Register route
-router.post('/register', (req, res, next) =>
-{
-    const email = req.body.email
-    const pswd = req.body.password
+const router = module.exports = express.Router()
 
-    User.addUser(email, pswd, err => 
-    {
-        if(err){
-            res.json({success: false, msg: 'Failed to register user'})
-        } else {
-            res.json({success: true, msg: 'User registered'})
-        }
-    })
+// Parse URL-encoded bodies (as sent by HTML forms)
+router.use(express.urlencoded({extended: true}))
+// Parse JSON bodies (as sent by API clients)
+router.use(express.json())
+
+// Get register page
+router.get('/register', (req, res) => {
+    res.status(200).sendFile(__dirname + '/register.html')
 })
 
-// Authenticate route
-router.post('/athenticate', (req, res, next) =>
+// Get login page
+router.get('/login', (req, res) => { 
+    res.status(200).sendFile(__dirname + '/login.html')
+})
+
+// Register new user account
+router.post('/register', (req, res) =>
 {
-    const email = req.body.email
+    // make sure that user has a bank account, verify social security number, 
+    // and send confirmation email []
+
+    // expects a json request
+    const username = req.body.username
     const password = req.body.password
 
-    User.getUserByName(email, (err, user) => 
-    {
-        if(err) throw err
-        if(!user) {
-            return res.json({success: false, msg: 'User not found'})
-        }
+    console.log(user.getUserByUsername(username))
 
-        User.comparePassword(password, user.password, (err, isMatch) =>
+    db.query(user.getUserByUsername(username), (error, result) =>
+    {
+        if(error) throw error
+        // Checking to see if user already exists
+        if(result.rows.length == 0)
         {
-            if(err) throw err
-            if(isMatch) {
-                const token = jwt.sign(user, config.secret, {expiresIn: 604800})
-                res.json({
-                    success: true,
-                    token: 'JWT' + token,
-                    user: {
-                        user: user._id,
-                        email: user.email
-                    }
+            // Creating user and storing salt hashed password
+            bcrypt.hash(password, 12, (err, hash) =>
+            {
+                db.query(`INSERT INTO user_account(username, pswd_hash) 
+                VALUES ('${username}', '${hash}') RETURNING username;`, 
+                (error, result) =>
+                {
+                    if(error) throw error
+                    console.log(result.rows[0])
+                    res.json({
+                        status: "ok",
+                        message: result.rows[0]
+                    })
                 })
-            } else {
-                return res.json({success: false, msg: 'Wrong password'})
-            }
-        })
+            })
+        } 
+        else {
+            res.json({
+                status: "error",
+                message: "Username already exists"
+            })
+        }
     })
 })
 
-// Profile route
-router.get('/profile', passport.authenticate('jwt', {session: false}, 
-(req, res, next) => 
+router.post('/login', (req, res) =>
 {
-    res.json({user: req.user})
-}))
+    const username = req.body.username
+    const password = req.body.password
 
-module.export = router
+    // verify user
+    db.query(`SELECT pswd_hash FROM user_account WHERE username = '${username}'`, 
+    (err, result) => 
+    {
+        if(err) throw err
+        if(result.rows.length > 0) {
+            // verify password
+            bcrypt.compare(password, result.rows[0].pswd_hash, (err, result) =>
+            {
+                if(result){
+                    // valid password
+                    var token = jwt.sign({ id: username }, process.env.SECRET, {
+                        expiresIn: 86400 // expires in 24 hours
+                    })
+                    let expireDate = moment()
+                    expireDate.add(86400, 's')
+                    res.status(200).json({
+                        message: "Login successful",
+                        username: username,
+                        token: token,
+                        expiresIn: expireDate.format('LLL')
+                    })
+                } else {
+                    // invalid password
+                    res.status(401).json({
+                        message: "Wrong password"
+                    })
+                }
+            })
+        }
+        else {
+            // invalid username
+            res.json({
+                status: "error",
+                message: "Username does not exist"
+            })
+        }
+    })
+})
+
+// protected route test
+router.get('/me', VerifyToken, (req, res) =>
+{
+    res.send(req.username)
+})
+
+// The logout endpoint is not needed. The act of logging out can solely be done 
+// through the client side. A token is usually kept in a cookie or the browser’s
+// localstorage. Logging out is as simple as destroying the token on the client.
+
+// User account management...
+// router.post('/user/:id', db.updatePassword) // missing hashing
+// router.delete('/user/:id', db.deleteUser)

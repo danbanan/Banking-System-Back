@@ -3,40 +3,62 @@
 
 -- [] customer table
 CREATE TABLE customer (
-  ssn INT PRIMARY KEY,
-  usr_name VARCHAR(50) REFERENCES user_account(usr_name),
+  ssn VARCHAR(9) PRIMARY KEY,
   account_number VARCHAR(9) REFERENCES bank_account(account_number),
   first_name VARCHAR(20) NOT NULL,
   last_name VARCHAR(20) NOT NULL,
   home_address VARCHAR(355) NOT NULL,
   telephone VARCHAR(10) NOT NULL,
-  email_address VARCHAR(355) NOT NULL,
+  email_address VARCHAR(355) NOT NULL
 );
 
 -- [] user account table
 CREATE TABLE user_account (
-  usr_name VARCHAR(50) PRIMARY KEY,
+  username VARCHAR(50) PRIMARY KEY,
   pswd_hash VARCHAR(60) NOT NULL,
+  ssn VARCHAR(9) REFERENCES customer(ssn) 
 );
 
 -- [] bank acount table
 CREATE TABLE bank_account (
   account_number VARCHAR(9) PRIMARY KEY,
   balance float(2) NOT NULL,
-  check_account BOOL DEFAULT 't',
-  saving_account BOOL DEFAULT 'f',
-  open_account BOOL DEFAULT 't',
+  account_type CHAR(1) DEFAULT 'c',
+  isOpen BOOL DEFAULT 't'
 );
 
--- [] insert new customer
+-- [] clear customer table
 
--- [] create user account
+-- [] clear user account table
 
--- [] find user by user_name and password
+-- [] clear bank account table
+
+-- [x] create user account
+INSERT INTO user_account(username, pswd_hash)
+VALUES (${usr}, ${pswd});
+
+-- [] get all users
+SELECT *
+FROM user_account;
+
+-- [x] find user by username
+SELECT *
+FROM user_account
+WHERE username = '${username}';
+
+-- [x] verify user, return password
+SELECT pswd_hash 
+FROM user_account 
+WHERE username = '${username}';
 
 -- [] delete user account
+DELETE FROM user_account
+WHERE username = ${username};
 
--- [] change user_name on user account
+-- [] change change password on user account
+UPDATE user_account
+SET pswd_hash = ${new_pswd}
+WHERE username = ${username};
 
 -- [] get user customer information
 
