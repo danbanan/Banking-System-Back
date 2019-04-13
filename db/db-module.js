@@ -5,7 +5,13 @@ let pool;
 if(process.env.LOCAL && process.env.LOCAL === 'TRUE'){
     // Pool of connections so that we don't have to open a client and close it 
     // every time we make a query
-    pool = new Pool()
+    pool = new Pool({
+        user: process.env.USER,
+        host: process.env.HOST,
+        database: process.env.DATABASE,
+        password: process.env.PASSWORD,
+        port: process.env.PORT
+    })
     console.log('Starting local database')
     pool.on('error', function (err) {
         console.log(err)
@@ -50,7 +56,7 @@ if (process.env.REBUILD_DATA && process.env.REBUILD_DATA === "TRUE")
   
 // Close database connections on exit
 const closeDBConnections = () => {
-    console.log('calling end')
+    console.log('\nCalling end...')
     pool.end()
     process.exit(1);
 };
