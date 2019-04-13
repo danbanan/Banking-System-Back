@@ -3,7 +3,7 @@ const { Pool } = require('pg')
 let pool;
 
 QUnit.module("Database Testing");
-QUnit.test("Remote connection credentials are valid", asser => {
+QUnit.test("Remote connection credentials are valid", assert => {
   pool = new Pool({
       user: process.env.USER,
       host: process.env.HOST,
@@ -13,12 +13,11 @@ QUnit.test("Remote connection credentials are valid", asser => {
   })
   const connectionDone = assert.async()
   pool.query('SELECT NOW()', (err, res) => {
-    try {
-      assert.ok(true, "Connection was successful")
-      connectionDone()
-    } catch (err) {
+    if (err) {
       assert.ok(false, "Connection failed")
       connectionDone()
     }
+    assert.ok(true, "Connection was successful")
+    connectionDone()
   })
 })
