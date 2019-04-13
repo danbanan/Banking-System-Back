@@ -21,9 +21,22 @@ const getPswdByUsername = (username) => {
     return `SELECT pswd_hash FROM user_account WHERE username = '${username}'`
 }
 
+const changePassword = (username, new_pswd) =>
+{
+    return `UPDATE user_account SET pswd_hash = '${new_pswd}' 
+    WHERE user_name = '${username}'`
+}
+
+const deleteUser = (username) =>
+{
+    return `DELETE FROM user_account WHERE user_name = '${username}'`
+}
+
 module.exports = {
     createTable,
     createUser,
     getUserByUsername,
-    getPswdByUsername
+    getPswdByUsername,
+    changePassword,
+    deleteUser
 }

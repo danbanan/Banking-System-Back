@@ -23,6 +23,8 @@ router.get('/login', (req, res) => {
     res.status(200).sendFile(__dirname + '/login.html')
 })
 
+// localhost:3000/user/register
+
 // Register new user account
 router.post('/register', (req, res) =>
 {

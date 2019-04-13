@@ -58,46 +58,7 @@ const closeDBConnections = () => {
 process.on('SIGINT', closeDBConnections);
 process.on('SIGTERM', closeDBConnections);
 
-const getUserByCredentials = (req, res) =>
-{
-    const { user_name, password } = req.body
-
-    pool.query(`SELECT * FROM user_account WHERE user_name = '${user_name}' AND 
-    pswd_hash = '${password}'`, (err, result) =>
-    {
-        if(err) throw err
-        res.status(200).json(result.rows)
-    })
-}
-
-const updatePassword = (req, res) =>
-{
-    const { user_name, password, new_pswd } = req.body
-    // check old password here
-    pool.query(`UPDATE user_account SET pswd_hash = '${new_pswd}' WHERE 
-    user_name = '${user_name}'`, (error, result) =>
-    {
-        if(error) throw error
-        res.status(200).send('Password is changed')
-    })
-}
-
-const deleteUser = (req, res) =>
-{
-    const user_name = req.params.user_name
-
-    pool.query(`DELETE FROM user_account WHERE user_name = '${user_name}'`, 
-    (error, result) => 
-    {
-        if(error) throw error
-        res.status(200).send(`User deleted with user name ${user_name}`)
-    })
-}
-
 module.exports = {
-    getUserByCredentials,
-    updatePassword,
-    deleteUser,
     // query promise
     query: (text, callback) => { return pool.query(text, callback) },
 }
