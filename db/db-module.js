@@ -6,11 +6,11 @@ if(process.env.LOCAL && process.env.LOCAL === 'TRUE'){
     // Pool of connections so that we don't have to open a client and close it 
     // every time we make a query
     pool = new Pool({
-        user: process.env.USER,
-        host: process.env.HOST,
-        database: process.env.DATABASE,
-        password: process.env.PASSWORD,
-        port: process.env.PORT
+        user: process.env.DB_USER,
+        host: process.env.DB_HOST,
+        database: process.env.DB_DATABASE,
+        password: process.env.DB_PASSWORD,
+        port: process.env.DB_PORT
     })
     console.log('Starting local database')
     pool.on('error', function (err) {
