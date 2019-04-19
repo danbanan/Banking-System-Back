@@ -85,7 +85,8 @@ router.post('/login', (req, res) =>
                     })
                     let expireDate = moment()
                     expireDate.add(86400, 's')
-                    res.status(200).json({
+                    res.json({
+                        status: 'ok',
                         message: "Login successful",
                         username: username,
                         token: token,
@@ -93,7 +94,8 @@ router.post('/login', (req, res) =>
                     })
                 } else {
                     // invalid password
-                    res.status(401).json({
+                    res.json({
+                        status: 'error',
                         message: "Wrong password"
                     })
                 }
