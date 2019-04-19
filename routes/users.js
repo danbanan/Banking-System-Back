@@ -34,6 +34,7 @@ router.post('/register', (req, res) =>
     // expects a json request
     const username = req.body.username
     const password = req.body.password
+    const ssn = req.body.ssn
 
     db.query(user.getUserByUsername(username), (error, result) =>
     {

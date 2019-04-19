@@ -2,14 +2,14 @@ require('dotenv').config()
 const { Pool } = require('pg')
 let pool;
 
-QUnit.module("Database Testing");
-QUnit.test("Remote connection credentials are valid", assert => {
+QUnit.module('Database Testing');
+QUnit.test('Remote connection credentials are valid', assert => {
   pool = new Pool({
-      user: process.env.USER,
-      host: process.env.HOST,
-      database: process.env.DATABASE,
-      password: process.env.PASSWORD,
-      port: process.env.PORT
+      user: process.env.DB_USER,
+      host: process.env.DB_HOST,
+      database: process.env.DB_DATABASE,
+      password: process.env.DB_PASSWORD,
+      port: process.env.DB_PORT
   })
   const connectionDone = assert.async()
   pool.query('SELECT NOW()', (err, res) => {
@@ -21,3 +21,5 @@ QUnit.test("Remote connection credentials are valid", assert => {
     connectionDone()
   })
 })
+
+// Make test for when the connection credentials are invalid
