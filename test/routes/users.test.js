@@ -8,7 +8,8 @@ const valid_user_data = {
 }
 
 QUnit.module('/users/ Testing')
-QUnit.test("Register user provided valid data", async assert => 
+
+QUnit.test("Register user provided valid data", async assert =>
 {
     const assertAsync = assert.async()
     const valid_response = {
@@ -29,3 +30,22 @@ QUnit.test("Register user provided valid data", async assert =>
     }
 })
 
+QUnit.test("Login user provided verified data", async assert=>
+{
+    const assertAsync = assert.async()
+    const valid_response = {
+        status: 'ok',
+        username: 'Test'
+    }
+    try {
+        const response = await request(app)
+            .post('/users/login')
+            .send(valid_user_data)
+            .expect('Content-Type', /json/)
+        assertAsync()
+        assert.equal(response.body.status, 'ok')
+    } catch (err) {
+        assertAsync()
+        assert.ok(false, `FAIL /users/login with ${err}`)
+    }
+})
