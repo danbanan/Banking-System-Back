@@ -1,5 +1,7 @@
 const request = require('supertest')
 const app = require('../../app')
+const db = require('../../db/db-module')
+const utils = require('../../db/utils')
 
 const valid_user_data = {
     username: 'Test',
@@ -7,7 +9,22 @@ const valid_user_data = {
     ssn: '123456789'
 }
 
-QUnit.module('/users/ Testing')
+QUnit.module('/users/ Testing', 
+{
+    // rebuilding database before starting tests
+    before: assert => {
+        const done = assert.async()
+        utils.rebuildDatabase()
+            .then(() => {
+                done()
+            })
+            .catch(error => {
+                console.log(error)
+                done()
+            })
+    }
+})
+
 
 QUnit.test("Register user provided valid data", async assert =>
 {
