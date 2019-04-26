@@ -1,10 +1,16 @@
+require('dotenv').config()
 const express = require('express')
 const config = require('./config/express')
+const utils = require('./db/utils')
 const port = 3000
 
 // Mount express config file to main express app
 const app = express()
 app.use(config)
+
+if (process.env.REBUILD_DATA && process.env.REBUILD_DATA === "TRUE") {
+    utils.rebuildDatabase()
+}
 
 // Load HTML page
 app.get('/', (req, res) => { 

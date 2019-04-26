@@ -4,33 +4,24 @@ const createTable = {
     `CREATE TABLE user_account (
         username VARCHAR(50) PRIMARY KEY,
         pswd_hash VARCHAR(60) NOT NULL,
-        ssn VARCHAR(9) REFERENCES customer(ssn) 
+        ssn VARCHAR(11) REFERENCES customer(ssn) 
     );`
 }
 
-const createUser = (username, hash) => {
-    return `INSERT INTO user_account(username, pswd_hash) 
-    VALUES ('${username}', '${hash}') RETURNING username;`
-}
+const createUser = `INSERT INTO user_account(username, pswd_hash, ssn) 
+    VALUES ($1, $2, $3) RETURNING username;`
 
-const getUserByUsername = (username) => {
-    return (`SELECT * FROM user_account WHERE username = '${username}'`)
-}
+const getUserByUsername = 'SELECT * FROM user_account WHERE username = $1'
 
-const getPswdByUsername = (username) => {
-    return `SELECT pswd_hash FROM user_account WHERE username = '${username}'`
-}
+const getPswdByUsername = `SELECT pswd_hash FROM user_account 
+WHERE username = $1`
 
-const changePassword = (username, new_pswd) =>
-{
-    return `UPDATE user_account SET pswd_hash = '${new_pswd}' 
-    WHERE user_name = '${username}'`
-}
+const getSsnByUsername = `SELECT ssn FROM user_account WHERE username = $1`
 
-const deleteUser = (username) =>
-{
-    return `DELETE FROM user_account WHERE user_name = '${username}'`
-}
+const changePassword = `UPDATE user_account SET pswd_hash = $1 
+WHERE user_name = $2`
+
+const deleteUser = 'DELETE FROM user_account WHERE user_name = $1'
 
 module.exports = {
     createTable,
@@ -38,5 +29,6 @@ module.exports = {
     getUserByUsername,
     getPswdByUsername,
     changePassword,
-    deleteUser
+    deleteUser,
+    getSsnByUsername
 }

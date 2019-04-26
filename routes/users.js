@@ -4,111 +4,140 @@ const jwt = require('jsonwebtoken')
 const moment = require('moment');
 const db = require('../db/db-module')
 const VerifyToken = require('../auth/VerifyToken')
-const user = require('../db/sql/user-account-sql')
+const user_account = require('../db/sql/user-account-sql')
+const customer = require('../db/sql/customer-sql')
 
 const router = module.exports = express.Router()
 
-// Parse URL-encoded bodies (as sent by HTML forms)
+// Mounts middelware to router so that we can parse URL-encoded bodies (as sent
+// by HTML forms) and JSON bodies (as sent by API clients)
 router.use(express.urlencoded({extended: true}))
-// Parse JSON bodies (as sent by API clients)
 router.use(express.json())
-
-// Get register page
-router.get('/register', (req, res) => {
-    res.status(200).sendFile(__dirname + '/register.html')
-})
-
-// Get login page
-router.get('/login', (req, res) => { 
-    res.status(200).sendFile(__dirname + '/login.html')
-})
 
 // localhost:3000/user/register
 
-// Register new user account
-router.post('/register', (req, res) =>
+router.post('/register', (req, res) => 
 {
-    // make sure that user has a bank account, verify social security number, 
-    // and send confirmation email []
+    // send confirmation email, nice to have
 
-    // expects a json request
-    const username = req.body.username
-    const password = req.body.password
-    const ssn = req.body.ssn
+    const required_fields = new Set([
+        'username',
+        'password',
+        'ssn'
+    ])
 
-    db.query(user.getUserByUsername(username), (error, result) =>
+    const user = Object.assign({}, req.body)
+
+    for (let field of required_fields)
     {
-        if(error) throw error
-        // Checking to see if user already exists
-        if(result.rows.length == 0)
+        if (!user.hasOwnProperty(field))
         {
-            // Creating user and storing salt hashed password
-            bcrypt.hash(password, 12, (err, hash) =>
-            {
-                db.query(user.createUser(username, hash), (error, result) =>
-                {
-                    if(error) throw error
-                    res.json({
-                        status: "ok",
-                        message: 
-                        `Created user with username: ${result.rows[0].username}`
-                    })
-                })
-            })
-        } 
-        else {
             res.json({
-                status: "error",
-                message: "Username already exists"
+                status: 'error',
+                message: 'missing fields'
             })
         }
-    })
+    }
+
+    db.paramQuery(user_account.getUserByUsername, [user.username])
+        .then(result => 
+        {
+            // is username already taken?
+            if(result.rows.length == 0) 
+            {
+                db.paramQuery(customer.getCustomerBySsn, [user.ssn])
+                    .then(result => 
+                    {
+                        // is the person a customer?
+                        if(result.rows.length > 0) 
+                        {
+                            bcrypt.hash(user.password, 12, (err, hash) => 
+                            {
+                                const values = [user.username, hash, user.ssn]
+                                db.paramQuery(user_account.createUser, values)
+                                .then(result => 
+                                {
+                                    res.json({ status: 'ok' })
+                                    console.log(result.rows[0])
+                                })
+                            })
+                        } else {
+                            res.json({
+                                status: 'error',
+                                message: 'Invalid SSN'
+                            })
+                        }
+                    })
+            } else {
+                res.json({ 
+                    status: 'error',
+                    message: 'Username already exists'
+                })
+            }
+        })
+        .catch(err => console.error(err.stack))
 })
 
 router.post('/login', (req, res) =>
 {
-    const username = req.body.username
-    const password = req.body.password
+    const required_fields = new Set([
+        'username',
+        'password'
+    ])
+
+    const user = Object.assign({}, req.body)
+    
+    for (let field of required_fields) 
+    {
+        if (!user.hasOwnProperty(field))
+        {
+            res.json({
+                status: 'error',
+                message: 'Missing user data'
+            })
+        }
+    }
 
     // verify user
-    db.query(user.getPswdByUsername(username), (err, result) => 
-    {
-        if(err) throw err
-        if(result.rows.length > 0) {
-            // verify password
-            bcrypt.compare(password, result.rows[0].pswd_hash, (err, result) =>
+    db.paramQuery(user_account.getPswdByUsername, [user.username])
+        .then(result => 
+        {
+            if(result.rows.length > 0) 
             {
-                if(result){
-                    // valid password
-                    var token = jwt.sign({ id: username }, process.env.SECRET, {
-                        expiresIn: 86400 // expires in 24 hours
-                    })
-                    let expireDate = moment()
-                    expireDate.add(86400, 's')
-                    res.json({
-                        status: 'ok',
-                        message: "Login successful",
-                        username: username,
-                        token: token,
-                        expiresIn: expireDate.format('LLL')
-                    })
-                } else {
-                    // invalid password
-                    res.json({
-                        status: 'error',
-                        message: "Wrong password"
-                    })
-                }
-            })
-        }
-        else {
-            // invalid username
-            res.json({
-                status: "error",
-                message: "Username does not exist"
-            })
-        }
-    })
+                // verify password
+                bcrypt.compare(user.password, result.rows[0].pswd_hash, 
+                    (err, result) =>
+                {
+                    if(result)
+                    {
+                        const secret = process.env.SECRET
+                        var token = jwt.sign({ id: user.username }, secret, {
+                            expiresIn: 86400 // expires in 24 hours
+                        })
+                        let expireDate = moment()
+                        expireDate.add(86400, 's')
+                        res.json({
+                            status: 'ok',
+                            message: "Login successful",
+                            username: user.username,
+                            token: token,
+                            expiresIn: expireDate.format('LLL')
+                        })
+                    } else {
+                        res.json({
+                            status: 'error',
+                            message: "Wrong password"
+                        })
+                    }
+                })
+            } else {
+                res.json({
+                    status: "error",
+                    message: "Username does not exist"
+                })
+            }
+        })
+    .catch(err => console.error(err.stack))
 })
 
 // protected route test

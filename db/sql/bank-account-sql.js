@@ -2,27 +2,34 @@ const createTable = {
     name: 'create-bank-account-table',
     text: 
     `CREATE TABLE bank_account (
-        account_number VARCHAR(9) PRIMARY KEY,
+        account_number SERIAL PRIMARY KEY,
+        ssn VARCHAR(11) REFERENCES customer(ssn),
         balance float(2) NOT NULL DEFAULT 0,
         account_type CHAR(1) DEFAULT 'c',
-        isOpen BOOL DEFAULT 't'
-    );`
+        isOpen BOOL DEFAULT 't');`
 }
 
-const insertPreData = {
-    name: 'insert-pre-data',
-    text: `
-    INSERT INTO bank_account (account_number, balance, account_type, isopen)
+const populate = {
+    name: 'populate-bank-account-table',
+    text: 
+    `INSERT INTO bank_account (balance, ssn, account_type, isopen)
     VALUES 
-    ('000000001', 70400, DEFAULT, DEFAULT),
-    ('000000002', 50080, 's', DEFAULT),
-    ('000000003', 1004000, 's', DEFAULT),
-    ('000000004', 1020000, DEFAULT, DEFAULT),
-    ('000000005', 5000, DEFAULT, DEFAULT);
-    `
+    (70400, '317-14-4057', DEFAULT, DEFAULT),
+    (50080, '317-14-4057','s', DEFAULT),
+    (1020000, '249-89-9093',DEFAULT, DEFAULT),
+    (1004000, '249-89-9093','s', DEFAULT),
+    (5000, '192-40-8735', DEFAULT, DEFAULT);`
 }
+
+const closeAccount = `UPDATE bank_account SET isOpen = FALSE 
+    WHERE account_number = $1`
+
+const createAccount = `INSERT INTO bank_account (ssn, account_type) 
+VALUES ($1, $2) RETURNING account_number`
 
 module.exports = {
     createTable,
-    insertPreData
+    populate,
+    closeAccount,
+    createAccount
 }
