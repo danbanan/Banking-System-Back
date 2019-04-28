@@ -25,11 +25,22 @@ const closeAccount = `UPDATE bank_account SET isOpen = FALSE
     WHERE account_number = $1`
 
 const createAccount = `INSERT INTO bank_account (ssn, account_type) 
-VALUES ($1, $2) RETURNING account_number`
+    VALUES ($1, $2) RETURNING account_number`
+
+const makeDeposit = `UPDATE bank_account SET balance = balance + $1 
+    WHERE account_number = $2`
+
+const makeWithdrawal = `UPDATE bank_account SET balance = balance - $1 
+    WHERE account_number = $2`
+
+const getBalance = `SELECT balance FROM bank_account WHERE account_number = $1`
 
 module.exports = {
     createTable,
     populate,
     closeAccount,
-    createAccount
+    createAccount,
+    makeDeposit,
+    makeWithdrawal,
+    getBalance
 }

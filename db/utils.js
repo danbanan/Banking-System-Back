@@ -2,6 +2,7 @@ const db = require('./db-module')
 const bank_account = require('./sql/bank-account-sql')
 const customer = require('./sql/customer-sql')
 const user_account = require('./sql/user-account-sql')
+const transaction = require('./sql/transaction-sql')
 
 const clearDatabase = () => 
 {
@@ -14,6 +15,7 @@ const createTables = () =>
     return db.queryPromise(customer.createTable)
         .then(() => db.queryPromise(bank_account.createTable))
         .then(() => db.queryPromise(user_account.createTable))
+        .then(() => db.queryPromise(transaction.createTable))
 }
 
 const populateTables = () => 

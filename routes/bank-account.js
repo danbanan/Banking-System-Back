@@ -3,6 +3,7 @@ const db = require('../db/db-module')
 const VerifyToken = require('../auth/VerifyToken')
 const bank_account = require('../db/sql/bank-account-sql')
 const user = require('../db/sql/user-account-sql')
+const transaction = require('../db/sql/transaction-sql')
 
 const router = module.exports = express.Router()
 
@@ -87,3 +88,117 @@ router.post('/open', VerifyToken, (req, res) =>
         })
 })
 
+router.put('/deposit', VerifyToken, (req, res) =>
+{
+    const required_fields = new Set([
+        'account_number',
+        'amount',
+        'description'
+    ])
+
+    const account = Object.assign({}, req.body)
+
+    for (let field of required_fields) 
+    {
+        if (!account.hasOwnProperty(field))
+        {
+            return res.json({
+                status: 'error',
+                message: 'Missing fields'
+            })
+        }
+    }
+
+    let values = [account.amount, account.account_number]
+
+    db.paramQuery(bank_account.makeDeposit, values)
+        .then(() =>
+        {
+            values = [account.account_number, account.amount, 
+                account.description]
+
+            db.paramQuery(transaction.updateHistory, values)
+                .then(() =>
+                {
+                    res.json({
+                        status: 'ok',
+                        message: 'Deposit was successful'
+                    })
+                })
+        })
+        .catch(err => 
+        {
+            console.error(err.stack)
+            res.json({
+                status: 'error',
+                message: 'Unable to make deposit'
+            })
+        })
+})
+
+router.put('/withdrawal', VerifyToken, (req, res) =>
+{
+    const required_fields = new Set([
+        'account_number',
+        'amount',
+        'description'
+    ])
+
+    const account = Object.assign({}, req.body)
+
+    for (let field of required_fields) 
+    {
+        if (!account.hasOwnProperty(field))
+        {
+            return res.json({
+                status: 'error',
+                message: 'Missing fields'
+            })
+        }
+    }
+
+    // get balance
+    db.paramQuery(bank_account.getBalance, [account.account_number])
+        .then(result =>
+        {
+            if (result.rows[0].balance > account.amount) {
+                // make withdrawal
+                let values = [account.amount, account.account_number]
+                db.paramQuery(bank_account.makeWithdrawal, values)
+                    .then(() =>
+                    {
+                        values = [account.account_number, account.amount, 
+                            account.description]
+
+                        // update transaction history                        
+                        db.paramQuery(transaction.updateHistory, values)
+                            .then(() =>
+                            {
+                                res.json({
+                                    status: 'ok',
+                                    message: 'Withdrawal was successful'
+                                })
+                            })
+                    })
+            } else {
+                res.json({
+                    status: 'error',
+                    message: 'Insufficient funds'
+                })
+            }
+
+        })
+        .catch(err =>
+        {
+            console.error(err)
+            res.json({
+                status: 'error',
+                message: 'Unable to make withdrawal'
+            })
+        })
+})
+
+router.get('/', VerifyToken, (req, res) => 
+{
+    // get transaction history on bank account
+})
