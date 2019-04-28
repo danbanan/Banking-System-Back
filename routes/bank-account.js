@@ -128,7 +128,7 @@ router.put('/deposit', VerifyToken, (req, res) =>
         })
         .catch(err => 
         {
-            console.error(err.stack)
+            console.error(err)
             res.json({
                 status: 'error',
                 message: 'Unable to make deposit'
@@ -167,7 +167,7 @@ router.put('/withdrawal', VerifyToken, (req, res) =>
                 db.paramQuery(bank_account.makeWithdrawal, values)
                     .then(() =>
                     {
-                        values = [account.account_number, account.amount, 
+                        values = [account.account_number, account.amount*(-1), 
                             account.description]
 
                         // update transaction history                        
@@ -198,7 +198,84 @@ router.put('/withdrawal', VerifyToken, (req, res) =>
         })
 })
 
-router.get('/', VerifyToken, (req, res) => 
+router.put('/transfer', VerifyToken, (req, res) =>
 {
-    // get transaction history on bank account
+    const required_fields = new Set([
+        'source',
+        'destination',
+        'amount'
+    ])
+
+    const account = Object.assign({}, req.body)
+
+    for (let field of required_fields) 
+    {
+        if (!account.hasOwnProperty(field))
+        {
+            return res.json({
+                status: 'error',
+                message: 'Missing fields'
+            })
+        }
+    }
+
+    db.paramQuery(bank_account.makeWithdrawal, [account.amount, account.source])
+        .then(() =>
+        {
+            let description = 'Internal transaction to ' + account.destination
+            let values = [account.source, account.amount*(-1), description]
+            db.paramQuery(transaction.updateHistory, values)
+                .then(() =>
+                {
+                    db.paramQuery(bank_account.makeDeposit, 
+                        [account.amount, account.destination])
+                        .then(() =>
+                        {
+                            description = 'Internal transaction from ' + 
+                                account.source
+
+                            values = [account.destination, account.amount, 
+                                description]
+                            
+                            db.paramQuery(transaction.updateHistory, values)
+                                .then(() =>
+                                {
+                                    res.json({
+                                        status: 'ok',
+                                        message: 'Internal transaction successful'
+                                    })
+                                })
+                        })
+                })
+        })
+})
+
+router.get('/account', VerifyToken, (req, res) => 
+{
+    const account = Object.assign({}, req.body)
+    
+    if (!account.hasOwnProperty('account_number'))
+    {
+        return res.json({
+            status: 'error',
+            message: 'Missing field'
+        })
+    }
+
+    db.paramQuery(bank_account.getTransactions, [account.account_number])
+        .then(result =>
+            {
+                res.json({
+                    status: 'ok',
+                    message: result.rows
+                })
+            })
+        .catch(err =>
+        {
+            console.error(err)
+            res.json({
+                status: 'error',
+                message: 'Unable to get account information'
+            })
+        })
 })

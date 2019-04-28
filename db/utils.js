@@ -6,8 +6,8 @@ const transaction = require('./sql/transaction-sql')
 
 const clearDatabase = () => 
 {
-    return db.queryPromise(`DROP TABLE IF EXISTS bank_account, user_account, 
-        customer;`)
+    return db.queryPromise(`DROP TABLE IF EXISTS transaction, bank_account, 
+        user_account, customer;`)
 }
 
 const createTables = () => 

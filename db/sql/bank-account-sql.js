@@ -35,6 +35,10 @@ const makeWithdrawal = `UPDATE bank_account SET balance = balance - $1
 
 const getBalance = `SELECT balance FROM bank_account WHERE account_number = $1`
 
+const getTransactions = `SELECT b.account_number, balance, account_type, amount, 
+    date, description FROM bank_account b JOIN transaction t ON 
+    b.account_number = t.account_number WHERE b.account_number = $1;`
+
 module.exports = {
     createTable,
     populate,
@@ -42,5 +46,6 @@ module.exports = {
     createAccount,
     makeDeposit,
     makeWithdrawal,
-    getBalance
+    getBalance,
+    getTransactions
 }
