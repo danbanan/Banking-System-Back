@@ -3,7 +3,6 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const moment = require('moment');
 const db = require('../db/db-module')
-const VerifyToken = require('../auth/VerifyToken')
 const user_account = require('../db/sql/user-account-sql')
 const customer = require('../db/sql/customer-sql')
 
@@ -142,16 +141,9 @@ router.post('/login', (req, res) =>
     .catch(err => console.error(err.stack))
 })
 
-// protected route test
-router.get('/me', (req, res) =>
-{
-    res.send('cors working')
-})
-
 // The logout endpoint is not needed. The act of logging out can solely be done 
 // through the client side. A token is usually kept in a cookie or the browser’s
 // localstorage. Logging out is as simple as destroying the token on the client.
 
 // User account management...
-// router.post('/user/:id', db.updatePassword) // missing hashing
 // router.delete('/user/:id', db.deleteUser)
