@@ -6,22 +6,22 @@ const transaction = require('./sql/transaction-sql')
 
 const clearDatabase = () => 
 {
-    return db.queryPromise(`DROP TABLE IF EXISTS transaction, bank_account, 
+    return db.query(`DROP TABLE IF EXISTS transaction, bank_account, 
         user_account, customer;`)
 }
 
 const createTables = () => 
 {
-    return db.queryPromise(customer.createTable)
-        .then(() => db.queryPromise(bank_account.createTable))
-        .then(() => db.queryPromise(user_account.createTable))
-        .then(() => db.queryPromise(transaction.createTable))
+    return db.query(customer.createTable)
+        .then(() => db.query(bank_account.createTable))
+        .then(() => db.query(user_account.createTable))
+        .then(() => db.query(transaction.createTable))
 }
 
 const populateTables = () => 
 {
-    return db.queryPromise(customer.populate)
-        .then(() => db.queryPromise(bank_account.populate))
+    return db.query(customer.populate)
+        .then(() => db.query(bank_account.populate))
 }
 
 const rebuildDatabase = () => 
@@ -33,5 +33,6 @@ const rebuildDatabase = () =>
 }
 
 module.exports = {
-    rebuildDatabase
+    rebuildDatabase,
+    clearDatabase
 }

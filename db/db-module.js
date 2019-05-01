@@ -34,9 +34,7 @@ process.on('SIGINT', closeDBConnections);
 process.on('SIGTERM', closeDBConnections);
 
 module.exports = {
-    // query promise
-    query: (text, callback) => { return pool.query(text, callback) },
     closeDBConnections,
-    queryPromise: (text) => { return pool.query(text) },
+    query: (text) => { return pool.query(text) },
     paramQuery: (text, values) => { return pool.query(text, values) }
 }

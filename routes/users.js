@@ -57,8 +57,10 @@ router.post('/register', (req, res) =>
                                 db.paramQuery(user_account.createUser, values)
                                 .then(result => 
                                 {
-                                    res.json({ status: 'ok' })
-                                    console.log(result.rows[0])
+                                    res.json({
+                                        status: 'ok',
+                                        message: result.rows[0].username
+                                    })
                                 })
                             })
                         } else {
