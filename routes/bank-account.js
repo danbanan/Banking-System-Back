@@ -12,6 +12,8 @@ const router = module.exports = express.Router()
 router.use(express.urlencoded({extended: true}))
 router.use(express.json())
 
+// get all open bank accounts
+
 router.put('/close', VerifyToken, (req, res) => 
 {
     const account = Object.assign({}, req.body)
@@ -44,22 +46,14 @@ router.put('/close', VerifyToken, (req, res) =>
 
 router.post('/open', VerifyToken, (req, res) => 
 {
-    const required_fields = new Set([
-        'username',
-        'account_type'
-    ])
-
-    const account = Object.assign({}, req.body)
-
-    for (let field of required_fields) 
+    const account = Object.assign({ username: req.username }, req.body)
+    
+    if (!account.hasOwnProperty('account_type'))
     {
-        if (!account.hasOwnProperty(field))
-        {
-            res.json({
-                status: 'error',
-                message: 'Missing fields'
-            })
-        }
+        res.json({
+            status: 'error',
+            message: 'Missing account type'
+        })
     }
 
     // get ssn by username
@@ -250,7 +244,7 @@ router.put('/transfer', VerifyToken, (req, res) =>
         })
 })
 
-router.get('/account', VerifyToken, (req, res) => 
+router.get('/', VerifyToken, (req, res) => 
 {
     const account = Object.assign({}, req.body)
     

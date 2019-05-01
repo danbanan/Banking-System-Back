@@ -141,9 +141,9 @@ router.post('/login', (req, res) =>
 })
 
 // protected route test
-router.get('/me', VerifyToken, (req, res) =>
+router.get('/me', (req, res) =>
 {
-    res.send(req.username)
+    res.send('cors working')
 })
 
 // The logout endpoint is not needed. The act of logging out can solely be done 

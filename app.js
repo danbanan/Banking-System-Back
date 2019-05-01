@@ -12,11 +12,6 @@ if (process.env.REBUILD_DATA && process.env.REBUILD_DATA === "TRUE") {
     utils.rebuildDatabase()
 }
 
-// Load HTML page
-app.get('/', (req, res) => { 
-    res.sendfile(__dirname + '/views/')
-})
-
 app.listen(port, () => {
     console.log(`App running on port ${port}.`)
 })
