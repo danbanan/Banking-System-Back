@@ -138,7 +138,7 @@ router.post('/deposit', VerifyToken, (req, res) =>
         })
 })
 
-router.put('/withdrawal', VerifyToken, (req, res) =>
+router.post('/withdrawal', VerifyToken, (req, res) =>
 {
     const required_fields = new Set([
         'account_number',
@@ -167,8 +167,9 @@ router.put('/withdrawal', VerifyToken, (req, res) =>
                 // make withdrawal
                 let values = [account.amount, account.account_number]
                 db.paramQuery(bank_account.makeWithdrawal, values)
-                    .then(() =>
+                    .then(result =>
                     {
+                        const balance = result.rows[0].balance
                         values = [account.account_number, account.amount*(-1), 
                             account.description]
 
@@ -178,7 +179,7 @@ router.put('/withdrawal', VerifyToken, (req, res) =>
                             {
                                 res.json({
                                     status: 'ok',
-                                    message: 'Withdrawal was successful'
+                                    message: balance
                                 })
                             })
                     })

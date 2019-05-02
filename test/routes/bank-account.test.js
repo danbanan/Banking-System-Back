@@ -115,7 +115,7 @@ QUnit.test('User opens new bank account', async assert =>
 })
 
 // test deposit end-point
-    // deposit valid amount []
+    // deposit valid amount [x]
     // trying to deposit a negative value []
     // trying to deposit to an account not belonging to the user []
 QUnit.test('Deposit a valid amount', async assert =>
@@ -130,6 +130,7 @@ QUnit.test('Deposit a valid amount', async assert =>
             .set('x-access-token', token)
             .expect('Content-Type', /json/)
 
+        // make deposit
         const valid_request = {
             account_number: response.body.message,
             amount: 5000,
@@ -151,18 +152,119 @@ QUnit.test('Deposit a valid amount', async assert =>
 })
 
 // test withdrawal end-point
-    // withdrawal with sufficient funds []
-    // withdrawal with insufficient funds []
+    // withdrawal with sufficient funds [x]
+    // withdrawal with insufficient funds [x]
     // trying to withdrawal from an account that does not belong to user []
+
+QUnit.test('Withdrawal and there are sufficient funds', async assert =>
+{
+    const done = assert.async()
+    
+    try {
+        // open account
+        let response = await request(app)
+            .post('/bank-account/open')
+            .send({ account_type: 's' })
+            .set('x-access-token', token)
+            .expect('Content-Type', /json/)
+
+        account_number = response.body.message
+
+        const deposit_request = {
+            account_number: account_number,
+            amount: 5000,
+            description: 'deposit-test'
+        }
+        // make deposit
+        response = await request(app)
+            .post('/bank-account/deposit')
+            .send(deposit_request)
+            .set('x-access-token', token)
+            .expect('Content-Type', /json/)
+        
+        const withdrawal_request = {
+            account_number: account_number,
+            amount: 2000,
+            description: 'withdrawal-test'
+        }
+
+        // make withdrawal 
+        response = await request(app)       
+            .post('/bank-account/withdrawal')
+            .send(withdrawal_request)
+            .set('x-access-token', token)
+            .expect('Content-Type', /json/)
+
+        done()
+        assert.equal(response.body.message, 3000)
+
+    } catch (error) {
+        done()
+        assert.ok(false, `FAIL /bank-account/withdrawal with ${error}`)
+    }
+})
+
+QUnit.test('Withdrawal and there are insufficient funds', async assert =>
+{
+    const done = assert.async()
+    
+    try {
+        // open account
+        let response = await request(app)
+            .post('/bank-account/open')
+            .send({ account_type: 's' })
+            .set('x-access-token', token)
+            .expect('Content-Type', /json/)
+
+        account_number = response.body.message
+
+        const deposit_request = {
+            account_number: account_number,
+            amount: 5000,
+            description: 'deposit-test'
+        }
+        // make deposit
+        response = await request(app)
+            .post('/bank-account/deposit')
+            .send(deposit_request)
+            .set('x-access-token', token)
+            .expect('Content-Type', /json/)
+        
+        const withdrawal_request = {
+            account_number: account_number,
+            amount: 6000,
+            description: 'withdrawal-test'
+        }
+
+        // make withdrawal 
+        response = await request(app)       
+            .post('/bank-account/withdrawal')
+            .send(withdrawal_request)
+            .set('x-access-token', token)
+            .expect('Content-Type', /json/)
+
+        if (response.body.status === 'error') {
+            done()
+            assert.ok(true, 'Insufficient funds resulted in error')
+        } else {
+            done()
+            assert.ok(false, 'Insufficient funds did not result in error')
+        }
+    } catch (error) {
+        done()
+        assert.ok(false, `FAIL /bank-account/withdrawal with ${error}`)
+    }
+})
 
 // test transfer end-point betweeen internal accounts
     // transfer with sufficient funds []
     // transfer with insufficient funds []
+
 
 // test transfer end-point between external accounts within the bank
     // transfer with sufficient funds []
     // transfer with insufficient funds []
 
 // get bank account transaction history end-point
-    // account belongi ng to user []
+    // account belonging to user []
     // account not belonging to user []

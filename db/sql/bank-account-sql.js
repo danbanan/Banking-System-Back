@@ -31,7 +31,7 @@ const makeDeposit = `UPDATE bank_account SET balance = balance + $1
     WHERE account_number = $2`
 
 const makeWithdrawal = `UPDATE bank_account SET balance = balance - $1 
-    WHERE account_number = $2`
+    WHERE account_number = $2 RETURNING balance`
 
 const getBalance = `SELECT balance FROM bank_account WHERE account_number = $1`
 
