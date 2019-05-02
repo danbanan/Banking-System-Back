@@ -53,33 +53,6 @@ QUnit.module('/home/ Testing',
     }
 })
 
-// invalid token
-QUnit.test("Invalid token", async assert =>
-{
-    const done = assert.async()
-
-    try {
-        const response = await request(app)
-            .get('/home')
-            .set('x-access-token', 'some-bad-token')
-            .expect('Content-Type', /json/)
-        
-        if (response.body.status === 'error') {
-            assert.ok(true, 'Bad token returned error')
-            done()
-        }
-        else {
-            // expecting an empty list
-            assert.ok(false, 'bad token accepted')
-            done()
-        }
-
-    } catch (error) {
-        assert.ok(true, 'Bad token resulted in error')
-        done()
-    }
-})
-
 QUnit.test("The user does not have a bank account", async assert =>
 {
     const done = assert.async()

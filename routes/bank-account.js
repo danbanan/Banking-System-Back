@@ -70,8 +70,7 @@ router.post('/open', VerifyToken, (req, res) =>
                     {
                         res.json({
                             status: 'ok',
-                            message: 'New account number: ' + 
-                            result.rows[0].account_number
+                            message: result.rows[0].account_number
                         })
                     })
             } 

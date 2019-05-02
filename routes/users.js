@@ -5,6 +5,8 @@ const moment = require('moment');
 const db = require('../db/db-module')
 const user_account = require('../db/sql/user-account-sql')
 const customer = require('../db/sql/customer-sql')
+const VerifyToken = require('../auth/VerifyToken')
+
 
 const router = module.exports = express.Router()
 
@@ -139,6 +141,15 @@ router.post('/login', (req, res) =>
             }
         })
     .catch(err => console.error(err.stack))
+})
+
+// testing route for VerifyToken
+router.get('/me', VerifyToken, (req, res) =>
+{
+    res.json({
+        status: 'ok',
+        message: req.username
+    })
 })
 
 // The logout endpoint is not needed. The act of logging out can solely be done 
