@@ -90,7 +90,7 @@ router.post('/open', VerifyToken, (req, res) =>
         })
 })
 
-router.put('/deposit', VerifyToken, (req, res) =>
+router.post('/deposit', VerifyToken, (req, res) =>
 {
     const required_fields = new Set([
         'account_number',

@@ -118,6 +118,37 @@ QUnit.test('User opens new bank account', async assert =>
     // deposit valid amount []
     // trying to deposit a negative value []
     // trying to deposit to an account not belonging to the user []
+QUnit.test('Deposit a valid amount', async assert =>
+{
+    const done = assert.async()
+    
+    try {
+        // open account
+        let response = await request(app)
+            .post('/bank-account/open')
+            .send({ account_type: 's' })
+            .set('x-access-token', token)
+            .expect('Content-Type', /json/)
+
+        const valid_request = {
+            account_number: response.body.message,
+            amount: 5000,
+            description: 'deposit-test'
+        }
+
+        response = await request(app)
+            .post('/bank-account/deposit')
+            .send(valid_request)
+            .set('x-access-token', token)
+            .expect('Content-Type', /json/)    
+
+        done()
+        assert.equal(response.body.status, 'ok')
+    } catch (error) {
+        done()
+        assert.ok(false, `FAIL /bank-account/deposit with ${error}`)
+    }
+})
 
 // test withdrawal end-point
     // withdrawal with sufficient funds []
