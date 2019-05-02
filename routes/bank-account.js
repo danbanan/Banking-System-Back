@@ -60,24 +60,33 @@ router.post('/open', VerifyToken, (req, res) =>
     db.paramQuery(user.getSsnByUsername, [account.username])
         .then(result =>
         {
-            // create new account
-            const values = [result.rows[0].ssn, account.account_type]
-
-            db.paramQuery(bank_account.createAccount, values)
-                .then(result =>
-                {
-                    res.json({
-                        status: 'ok',
-                        message: 'New account number: ' + 
-                        result.rows[0].account_number
+            if (result.rows.length > 0) 
+            {
+                // create new account
+                const values = [result.rows[0].ssn, account.account_type]
+    
+                db.paramQuery(bank_account.createAccount, values)
+                    .then(result =>
+                    {
+                        res.json({
+                            status: 'ok',
+                            message: 'New account number: ' + 
+                            result.rows[0].account_number
+                        })
                     })
+            } 
+            else {
+                res.json({
+                    status: 'error',
+                    message: 'User does not exist'
                 })
+            }
         })
         .catch(err =>
         {
             res.json({
                 status: 'error',
-                message: 'Unable to create new account'
+                message: 'Unable to open new bank account'
             })
         })
 })

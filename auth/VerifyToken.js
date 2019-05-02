@@ -4,16 +4,16 @@ function verifyToken(req, res, next)
 {
     var token = req.headers['x-access-token']
     if(!token){
-        res.status(401).json({
-            auth: false,
+        res.json({
+            status: 'error',
             message: 'No token provided'
         })
     } else {
         jwt.verify(token, process.env.SECRET, (err, decoded) =>
         {
             if(err){
-                res.status(500).json({
-                    auth: false,
+                res.json({
+                    status: 'error',
                     message: 'Failed to authenticate token'
                 })
             } else {
