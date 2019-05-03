@@ -156,7 +156,7 @@ QUnit.test('Deposit a valid amount', async assert =>
     // withdrawal with insufficient funds [x]
     // trying to withdrawal from an account that does not belong to user []
 
-QUnit.test('Withdrawal and there are sufficient funds', async assert =>
+QUnit.test('Withdrawal of sufficient funds', async assert =>
 {
     const done = assert.async()
     
@@ -168,7 +168,7 @@ QUnit.test('Withdrawal and there are sufficient funds', async assert =>
             .set('x-access-token', token)
             .expect('Content-Type', /json/)
 
-        account_number = response.body.message
+        const account_number = response.body.message
 
         const deposit_request = {
             account_number: account_number,
@@ -204,7 +204,7 @@ QUnit.test('Withdrawal and there are sufficient funds', async assert =>
     }
 })
 
-QUnit.test('Withdrawal and there are insufficient funds', async assert =>
+QUnit.test('Withdrawal of insufficient funds', async assert =>
 {
     const done = assert.async()
     
@@ -216,7 +216,7 @@ QUnit.test('Withdrawal and there are insufficient funds', async assert =>
             .set('x-access-token', token)
             .expect('Content-Type', /json/)
 
-        account_number = response.body.message
+        const account_number = response.body.message
 
         const deposit_request = {
             account_number: account_number,
@@ -257,9 +257,155 @@ QUnit.test('Withdrawal and there are insufficient funds', async assert =>
 })
 
 // test transfer end-point betweeen internal accounts
-    // transfer with sufficient funds []
-    // transfer with insufficient funds []
+    // transfer with sufficient funds [x]
+    // transfer with insufficient funds [x]
+QUnit.test('Transfering sufficient funds between internal accounts', 
+    async assert =>
+{
+    // create two accounts
+    // deposit funds to both accounts
+    const done = assert.async()
+    
+    try {
+        // open account
+        let response = await request(app)
+            .post('/bank-account/open')
+            .send({ account_type: 's' })
+            .set('x-access-token', token)
+            .expect('Content-Type', /json/)
 
+        const account1 = response.body.message
+
+        let deposit_request = {
+            account_number: account1,
+            amount: 5000,
+            description: 'deposit-test'
+        }
+        // make deposit
+        response = await request(app)
+            .post('/bank-account/deposit')
+            .send(deposit_request)
+            .set('x-access-token', token)
+            .expect('Content-Type', /json/)
+            
+        response = await request(app)
+            .post('/bank-account/open')
+            .send({ account_type: 's' })
+            .set('x-access-token', token)
+            .expect('Content-Type', /json/)
+
+        const account2 = response.body.message
+
+        deposit_request = {
+            account_number: account2,
+            amount: 5000,
+            description: 'deposit-test'
+        }
+        // make deposit
+        response = await request(app)
+            .post('/bank-account/deposit')
+            .send(deposit_request)
+            .set('x-access-token', token)
+            .expect('Content-Type', /json/)
+
+        const transfer_request = {
+            source: account1,
+            destination: account2,
+            amount: 3000
+        }
+
+        response = await request(app)
+            .post('/bank-account/transfer')
+            .send(transfer_request)
+            .set('x-access-token', token)
+            .expect('Content-Type', /json/)
+
+        if (response.body.status === 'ok') {
+            done()
+            assert.ok(true, 'Transaction was successful')
+        } else {
+            done()
+            assert.ok(false, 'Sufficient funds resulted in error')
+        }
+    } catch (error) {
+        done()
+        assert.ok(false, `FAIL /bank-account/transfer with ${error}`)
+    }
+})
+
+QUnit.test('Transfering insufficient funds between internal accounts', 
+    async assert =>
+{
+    // create two accounts
+    // deposit funds to both accounts
+    const done = assert.async()
+    
+    try {
+        // open account
+        let response = await request(app)
+            .post('/bank-account/open')
+            .send({ account_type: 's' })
+            .set('x-access-token', token)
+            .expect('Content-Type', /json/)
+
+        const account1 = response.body.message
+
+        let deposit_request = {
+            account_number: account1,
+            amount: 5000,
+            description: 'deposit-test'
+        }
+        // make deposit
+        response = await request(app)
+            .post('/bank-account/deposit')
+            .send(deposit_request)
+            .set('x-access-token', token)
+            .expect('Content-Type', /json/)
+            
+        response = await request(app)
+            .post('/bank-account/open')
+            .send({ account_type: 's' })
+            .set('x-access-token', token)
+            .expect('Content-Type', /json/)
+
+        const account2 = response.body.message
+
+        deposit_request = {
+            account_number: account2,
+            amount: 5000,
+            description: 'deposit-test'
+        }
+        // make deposit
+        response = await request(app)
+            .post('/bank-account/deposit')
+            .send(deposit_request)
+            .set('x-access-token', token)
+            .expect('Content-Type', /json/)
+
+        const transfer_request = {
+            source: account1,
+            destination: account2,
+            amount: 6000
+        }
+
+        response = await request(app)
+            .post('/bank-account/transfer')
+            .send(transfer_request)
+            .set('x-access-token', token)
+            .expect('Content-Type', /json/)
+
+        if (response.body.status === 'error') {
+            done()
+            assert.ok(true, 'Insufficient funds resulted in error')
+        } else {
+            done()
+            assert.ok(false, 'Insufficient funds did not result in error')
+        }
+    } catch (error) {
+        done()
+        assert.ok(false, `FAIL /bank-account/transfer with ${error}`)
+    }
+})
 
 // test transfer end-point between external accounts within the bank
     // transfer with sufficient funds []

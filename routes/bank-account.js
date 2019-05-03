@@ -201,7 +201,7 @@ router.post('/withdrawal', VerifyToken, (req, res) =>
         })
 })
 
-router.put('/transfer', VerifyToken, (req, res) =>
+router.post('/transfer', VerifyToken, (req, res) =>
 {
     const required_fields = new Set([
         'source',
@@ -222,34 +222,52 @@ router.put('/transfer', VerifyToken, (req, res) =>
         }
     }
 
-    db.paramQuery(bank_account.makeWithdrawal, [account.amount, account.source])
-        .then(() =>
+    db.paramQuery(bank_account.getBalance, [account.source])
+        .then(result =>
         {
-            let description = 'Internal transaction to ' + account.destination
-            let values = [account.source, account.amount*(-1), description]
-            db.paramQuery(transaction.updateHistory, values)
-                .then(() =>
-                {
-                    db.paramQuery(bank_account.makeDeposit, 
-                        [account.amount, account.destination])
-                        .then(() =>
-                        {
-                            description = 'Internal transaction from ' + 
-                                account.source
-
-                            values = [account.destination, account.amount, 
-                                description]
-                            
-                            db.paramQuery(transaction.updateHistory, values)
-                                .then(() =>
-                                {
-                                    res.json({
-                                        status: 'ok',
-                                        message: 'Internal transaction successful'
+            if (result.rows[0].balance > account.amount) 
+            {
+                db.paramQuery(bank_account.makeWithdrawal, [account.amount, 
+                        account.source])
+                    .then(result =>
+                    {
+                        let description = 'Internal transaction to ' + 
+                            account.destination
+                        let values = [account.source, account.amount*(-1), 
+                            description]
+            
+                        db.paramQuery(transaction.updateHistory, values)
+                            .then(() =>
+                            {
+                                db.paramQuery(bank_account.makeDeposit, 
+                                    [account.amount, account.destination])
+                                    .then(() =>
+                                    {
+                                        description = 'Internal transaction '
+                                        + 'from ' + account.source
+            
+                                        values = [account.destination, 
+                                            account.amount, description]
+                                        
+                                        db.paramQuery(transaction.updateHistory, 
+                                            values)
+                                            .then(() =>
+                                            {
+                                                res.json({
+                                                    status: 'ok',
+                                                    message: 'Internal transaction successful'
+                                                })
+                                            })
                                     })
-                                })
-                        })
+                            })
+                    })
+
+            } else {
+                res.json({
+                    status: 'error',
+                    message: 'Insufficient funds'
                 })
+            }
         })
 })
 
