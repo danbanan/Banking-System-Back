@@ -4,7 +4,7 @@ const cors = require('cors')
 
 // Routes
 const app = module.exports = express()
-app.use(cors())
+app.use(cors({ origin: 'http://localhost' }))
 app.use('/users', require('../routes/users'))
 app.use('/home', require('../routes/home'))
 app.use('/bank-account', require('../routes/bank-account'))
