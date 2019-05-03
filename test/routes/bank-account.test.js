@@ -412,5 +412,48 @@ QUnit.test('Transfering insufficient funds between internal accounts',
     // transfer with insufficient funds []
 
 // get bank account transaction history end-point
-    // account belonging to user []
+    // account belonging to user [x]
     // account not belonging to user []
+QUnit.test('Return transaction history on bank account', async assert =>
+{
+    const done = assert.async()
+    
+    try {
+        // open account
+        let response = await request(app)
+            .post('/bank-account/open')
+            .send({ account_type: 's' })
+            .set('x-access-token', token)
+            .expect('Content-Type', /json/)
+
+        const account = response.body.message
+
+        // make deposit
+        const valid_request = {
+            account_number: response.body.message,
+            amount: 400,
+            description: 'deposit-test'
+        }
+
+        for(i=0; i<5; i++)
+        {
+            await request(app)
+                .post('/bank-account/deposit')
+                .send(valid_request)
+                .set('x-access-token', token)
+                .expect('Content-Type', /json/)    
+        }
+
+        response = await request(app)
+            .get('/bank-account/')
+            .send({ account_number: account })
+            .set('x-access-token', token)
+            .expect('Content-Type', /json/)
+
+        done()
+        assert.equal(response.body.message.length, 5)
+    } catch (error) {
+        done()
+        assert.ok(false, `FAIL /bank-account/ with ${error}`)
+    }
+})
