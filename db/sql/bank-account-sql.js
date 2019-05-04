@@ -28,18 +28,21 @@ const createAccount = `INSERT INTO bank_account (ssn, account_type)
     VALUES ($1, $2) RETURNING account_number`
 
 const makeDeposit = `UPDATE bank_account SET balance = balance + $1 
-    WHERE account_number = $2`
+    WHERE account_number = $2 RETURNING balance`
 
 const makeWithdrawal = `UPDATE bank_account SET balance = balance - $1 
     WHERE account_number = $2 RETURNING balance`
 
 const getBalance = `SELECT balance FROM bank_account WHERE account_number = $1`
 
-const getTransactions = `SELECT b.account_number, balance, account_type, amount, 
-    date, description FROM bank_account b JOIN transaction t ON 
+const getTransactions = `SELECT amount, t.balance, date, description 
+    FROM bank_account b JOIN transaction t ON 
     b.account_number = t.account_number WHERE b.account_number = $1;`
 
 const getOpenAccounts = `SELECT * FROM bank_account WHERE ssn = $1 
+    AND isOpen = true`
+
+const getBankAccount = `SELECT * FROM bank_account WHERE account_number = $1
     AND isOpen = true`
 
 module.exports = {
@@ -51,5 +54,6 @@ module.exports = {
     makeWithdrawal,
     getBalance,
     getTransactions,
-    getOpenAccounts
+    getOpenAccounts,
+    getBankAccount
 }

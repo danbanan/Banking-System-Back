@@ -114,10 +114,10 @@ router.post('/deposit', VerifyToken, (req, res) =>
     let values = [account.amount, account.account_number]
 
     db.paramQuery(bank_account.makeDeposit, values)
-        .then(() =>
+        .then(result =>
         {
             values = [account.account_number, account.amount, 
-                account.description]
+                result.rows[0].balance, account.description]
 
             db.paramQuery(transaction.updateHistory, values)
                 .then(() =>
@@ -168,10 +168,9 @@ router.post('/withdrawal', VerifyToken, (req, res) =>
                 let values = [account.amount, account.account_number]
                 db.paramQuery(bank_account.makeWithdrawal, values)
                     .then(result =>
-                    {
-                        const balance = result.rows[0].balance
+                    { 
                         values = [account.account_number, account.amount*(-1), 
-                            account.description]
+                            result.rows[0].balance, account.description]
 
                         // update transaction history                        
                         db.paramQuery(transaction.updateHistory, values)
@@ -179,7 +178,7 @@ router.post('/withdrawal', VerifyToken, (req, res) =>
                             {
                                 res.json({
                                     status: 'ok',
-                                    message: balance
+                                    message: 'Withdrawal was successful'
                                 })
                             })
                     })
@@ -231,22 +230,21 @@ router.post('/transfer', VerifyToken, (req, res) =>
                         account.source])
                     .then(result =>
                     {
-                        let description = 'Internal transaction to ' + 
-                            account.destination
+                        let description = 'Transaction from ' + account.source
+                            + ' to ' + account.destination
+
                         let values = [account.source, account.amount*(-1), 
-                            description]
-            
+                            result.rows[0].balance, description]
+
                         db.paramQuery(transaction.updateHistory, values)
                             .then(() =>
                             {
                                 db.paramQuery(bank_account.makeDeposit, 
                                     [account.amount, account.destination])
-                                    .then(() =>
+                                    .then(result =>
                                     {
-                                        description = 'Internal transaction '
-                                        + 'from ' + account.source
-            
                                         values = [account.destination, 
+                                            result.rows[0].balance, 
                                             account.amount, description]
                                         
                                         db.paramQuery(transaction.updateHistory, 
@@ -255,7 +253,7 @@ router.post('/transfer', VerifyToken, (req, res) =>
                                             {
                                                 res.json({
                                                     status: 'ok',
-                                                    message: 'Internal transaction successful'
+                                                    message: 'Transaction was successful'
                                                 })
                                             })
                                     })
@@ -282,18 +280,23 @@ router.get('/', VerifyToken, (req, res) =>
             message: 'Missing field'
         })
     }
-
-    db.paramQuery(bank_account.getTransactions, [account.account_number])
+    db.paramQuery(bank_account.getBankAccount, [account.account_number])
         .then(result =>
-            {
-                res.json({
-                    status: 'ok',
-                    message: result.rows
-                })
-            })
-        .catch(err =>
         {
-            console.error(err)
+            account_info = [result.rows[0]]
+            db.paramQuery(bank_account.getTransactions, [account.account_number])
+                .then(result =>
+                    {
+                        // sends list with bank info first, then transactions
+                        res.json({
+                            status: 'ok',
+                            message: account_info.concat(result.rows)
+                        })
+                    })
+        })
+        .catch(error =>
+        {
+            console.error(error)
             res.json({
                 status: 'error',
                 message: 'Unable to get account information'

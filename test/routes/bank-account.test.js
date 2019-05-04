@@ -196,7 +196,7 @@ QUnit.test('Withdrawal of sufficient funds', async assert =>
             .expect('Content-Type', /json/)
 
         done()
-        assert.equal(response.body.message, 3000)
+        assert.equal(response.body.status, 'ok')
 
     } catch (error) {
         done()
@@ -229,7 +229,7 @@ QUnit.test('Withdrawal of insufficient funds', async assert =>
             .send(deposit_request)
             .set('x-access-token', token)
             .expect('Content-Type', /json/)
-        
+
         const withdrawal_request = {
             account_number: account_number,
             amount: 6000,
@@ -287,7 +287,7 @@ QUnit.test('Transfering sufficient funds between internal accounts',
             .send(deposit_request)
             .set('x-access-token', token)
             .expect('Content-Type', /json/)
-            
+
         response = await request(app)
             .post('/bank-account/open')
             .send({ account_type: 's' })
@@ -451,7 +451,8 @@ QUnit.test('Return transaction history on bank account', async assert =>
             .expect('Content-Type', /json/)
 
         done()
-        assert.equal(response.body.message.length, 5)
+        // first is bank account info the rest is transactions => 1 + 5
+        assert.equal(response.body.message.length, 6)
     } catch (error) {
         done()
         assert.ok(false, `FAIL /bank-account/ with ${error}`)
