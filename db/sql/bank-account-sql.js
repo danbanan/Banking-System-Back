@@ -39,8 +39,8 @@ const getTransactions = `SELECT amount, t.balance, date, description
     FROM bank_account b JOIN transaction t ON 
     b.account_number = t.account_number WHERE b.account_number = $1;`
 
-const getOpenAccounts = `SELECT * FROM bank_account WHERE ssn = $1 
-    AND isOpen = true`
+const getOpenAccounts = `SELECT account_number, balance, account_type 
+    FROM bank_account WHERE ssn = $1 AND isOpen = true`
 
 const getBankAccount = `SELECT * FROM bank_account WHERE account_number = $1
     AND isOpen = true`
