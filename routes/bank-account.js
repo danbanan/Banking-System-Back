@@ -269,7 +269,7 @@ router.post('/transfer', VerifyToken, (req, res) =>
         })
 })
 
-router.get('/', VerifyToken, (req, res) => 
+router.post('/', VerifyToken, (req, res) => 
 {
     const account = Object.assign({}, req.body)
     
