@@ -12,35 +12,48 @@ const router = module.exports = express.Router()
 router.use(express.urlencoded({extended: true}))
 router.use(express.json())
 
-// get all open bank accounts
-
 router.put('/close', VerifyToken, (req, res) => 
 {
     const account = Object.assign({}, req.body)
 
     if (!account.hasOwnProperty('account_number'))
     {
-        res.json({
+        return res.json({
             status: 'error',
             message: 'Missing account number'
         })
     }
 
-    db.paramQuery(bank_account.closeAccount, [account.account_number])
-        .then(() => 
+    db.paramQuery(bank_account.getBalance, [account.account_number])
+        .then(result =>
         {
-            res.json({
-                status: 'ok',
-                message: 'Closing account was successful'
-            })
+            if (result.rows[0].balance == 0) 
+            {
+                db.paramQuery(bank_account.closeAccount, [account.account_number])
+                    .then(() => 
+                    {
+                        res.json({
+                            status: 'ok',
+                            message: 'Closing account was successful'
+                        })
+                    })
+            }
+            else 
+            {
+                res.json({
+                    status: 'error',
+                    message: 'Bank account needs to be empty before closing.'
+                })
+            }
+            
         })
         .catch(err =>
         {
+            console.error(err.stack)
             res.json({
                 status: 'error',
                 message: 'An error occurred when attempting to close account'
             })
-            console.error(err.stack)
         })
 })
 
