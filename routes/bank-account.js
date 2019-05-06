@@ -299,6 +299,14 @@ router.post('/transfer', VerifyToken, (req, res) =>
                 })
             }
         })
+        .catch(error =>
+        {
+            console.error(error)
+            res.json({
+                status: 'error',
+                message: 'Unable to perform transfer.'
+            })
+        })
 })
 
 router.post('/', VerifyToken, (req, res) => 
