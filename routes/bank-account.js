@@ -276,8 +276,8 @@ router.post('/transfer', VerifyToken, (req, res) =>
                                     .then(result =>
                                     {
                                         values = [account.destination, 
-                                            result.rows[0].balance, 
-                                            account.amount, description]
+                                            account.amount, 
+                                            result.rows[0].balance, description]
                                         
                                         db.paramQuery(transaction.updateHistory, 
                                             values)
