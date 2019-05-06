@@ -43,7 +43,7 @@ const getOpenAccounts = `SELECT account_number, balance, account_type
     FROM bank_account WHERE ssn = $1 AND isOpen = true`
 
 const getBankAccount = `SELECT * FROM bank_account WHERE account_number = $1
-    AND isOpen = true`
+    AND ssn = $2 AND isOpen = true`
 
 module.exports = {
     createTable,

@@ -280,19 +280,37 @@ router.post('/', VerifyToken, (req, res) =>
             message: 'Missing field'
         })
     }
-    db.paramQuery(bank_account.getBankAccount, [account.account_number])
+
+    db.paramQuery(user.getSsnByUsername, [req.username])
         .then(result =>
         {
-            account_info = [result.rows[0]]
-            db.paramQuery(bank_account.getTransactions, [account.account_number])
+            const ssn = result.rows[0]
+            db.paramQuery(bank_account.getBankAccount, 
+                [account.account_number, ssn])
                 .then(result =>
+                {
+                    if (result.rows.length > 0)
                     {
-                        // sends list with bank info first, then transactions
+                        account_info = [result.rows[0]]
+                        db.paramQuery(bank_account.getTransactions, 
+                            [account.account_number])
+                            .then(result =>
+                                {
+                                    // sends list with bank info first, then transactions
+                                    res.json({
+                                        status: 'ok',
+                                        message: account_info.concat(result.rows)
+                                    })
+                                })
+                    }
+                    else
+                    {
                         res.json({
-                            status: 'ok',
-                            message: account_info.concat(result.rows)
+                            status: 'error',
+                            message: 'Not authorized to access this bank account.'
                         })
-                    })
+                    }
+                })
         })
         .catch(error =>
         {
