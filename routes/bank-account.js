@@ -354,3 +354,37 @@ router.post('/', VerifyToken, (req, res) =>
             })
         })
 })
+
+router.put('/name', VerifyToken, (req, res) =>
+{
+    const required_fields = new Set(['number', 'name'])
+    const account = Object.assign({}, req.body)
+
+    for (let field of required_fields) 
+    {
+        if (!account.hasOwnProperty(field)) 
+        {
+            return res.json({
+                status: 'error',
+                message: 'Missing field'
+            })
+        }
+    }
+
+    db.paramQuery(bank_account.changeName, [account.name, account.number])
+        .then(result =>
+        {
+            res.json({
+                status: 'ok',
+                message: result.rows[0].name
+            })
+        })
+        .catch(error => 
+        {
+            console.error(error)
+            res.json({
+                status: 'error',
+                message: 'Unable to change bank account name.'
+            })
+        })
+})

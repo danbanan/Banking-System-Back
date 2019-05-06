@@ -46,6 +46,9 @@ const getOpenAccounts = `SELECT account_number, balance, name, account_type
 const getBankAccount = `SELECT * FROM bank_account WHERE account_number = $1
     AND ssn = $2 AND isOpen = true`
 
+const changeName = `UPDATE bank_account SET name = $1 WHERE account_number = $2
+    RETURNING name`
+
 module.exports = {
     createTable,
     populate,
@@ -56,5 +59,6 @@ module.exports = {
     getBalance,
     getTransactions,
     getOpenAccounts,
-    getBankAccount
+    getBankAccount,
+    changeName
 }
