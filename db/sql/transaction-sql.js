@@ -4,9 +4,9 @@ const createTable = {
     `CREATE TABLE transaction (
         id SERIAL PRIMARY KEY,
         account_number INTEGER REFERENCES bank_account(account_number),
-        amount INTEGER NOT NULL,
+        amount float(2) NOT NULL,
         date DATE NOT NULL,
-        balance INTEGER NOT NULL,
+        balance float(2) NOT NULL,
         description VARCHAR(355) NOT NULL
     )`
 }

@@ -111,6 +111,13 @@ router.post('/deposit', VerifyToken, (req, res) =>
         }
     }
 
+    if (account.amount < 25) {
+        return res.json({
+            status: 'error',
+            message: 'Minimum deposit amount is $25.'
+        })
+    }
+
     let values = [account.amount, account.account_number]
 
     db.paramQuery(bank_account.makeDeposit, values)
@@ -221,6 +228,13 @@ router.post('/transfer', VerifyToken, (req, res) =>
         }
     }
 
+    if (account.amount < 5) {
+        return res.json({
+            status: 'error',
+            message: 'Minimum transfer amount is $5.'
+        })
+    }
+
     db.paramQuery(bank_account.getBalance, [account.source])
         .then(result =>
         {
@@ -284,7 +298,8 @@ router.post('/', VerifyToken, (req, res) =>
     db.paramQuery(user.getSsnByUsername, [req.username])
         .then(result =>
         {
-            const ssn = result.rows[0]
+            const ssn = result.rows[0].ssn
+
             db.paramQuery(bank_account.getBankAccount, 
                 [account.account_number, ssn])
                 .then(result =>
@@ -307,7 +322,7 @@ router.post('/', VerifyToken, (req, res) =>
                     {
                         res.json({
                             status: 'error',
-                            message: 'Not authorized to access this bank account.'
+                            message: 'You are not authorized to access this bank account.'
                         })
                     }
                 })
