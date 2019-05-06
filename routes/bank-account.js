@@ -188,7 +188,7 @@ router.post('/withdrawal', VerifyToken, (req, res) =>
     db.paramQuery(bank_account.getBalance, [account.account_number])
         .then(result =>
         {
-            if (result.rows[0].balance > account.amount) {
+            if (result.rows[0].balance >= account.amount) {
                 // make withdrawal
                 let values = [account.amount, account.account_number]
                 db.paramQuery(bank_account.makeWithdrawal, values)
@@ -256,7 +256,7 @@ router.post('/transfer', VerifyToken, (req, res) =>
     db.paramQuery(bank_account.getBalance, [account.source])
         .then(result =>
         {
-            if (result.rows[0].balance > account.amount) 
+            if (result.rows[0].balance >= account.amount) 
             {
                 db.paramQuery(bank_account.makeWithdrawal, [account.amount, 
                         account.source])
