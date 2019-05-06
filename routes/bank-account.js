@@ -47,13 +47,18 @@ router.put('/close', VerifyToken, (req, res) =>
 router.post('/open', VerifyToken, (req, res) => 
 {
     const account = Object.assign({ username: req.username }, req.body)
-    
-    if (!account.hasOwnProperty('account_type'))
+
+    const required_fields = new Set(['name','type'])
+
+    for (let field of required_fields) 
     {
-        res.json({
-            status: 'error',
-            message: 'Missing account type'
-        })
+        if (!account.hasOwnProperty(field))
+        {
+            return res.json({
+                status: 'error',
+                message: 'Missing fields'
+            })
+        }
     }
 
     // get ssn by username
@@ -63,7 +68,7 @@ router.post('/open', VerifyToken, (req, res) =>
             if (result.rows.length > 0) 
             {
                 // create new account
-                const values = [result.rows[0].ssn, account.account_type]
+                const values = [result.rows[0].ssn, account.name, account.type]
     
                 db.paramQuery(bank_account.createAccount, values)
                     .then(result =>
