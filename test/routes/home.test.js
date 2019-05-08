@@ -77,7 +77,8 @@ QUnit.test("The user has one bank account", async assert =>
 {
     const done = assert.async()
     const request_data = {
-        account_type: 'c'
+        name: 'Checking',
+        type: 'c'
     }
 
     // open bank account
@@ -108,10 +109,12 @@ QUnit.test("The user has more than one bank account", async assert =>
 {
     const done = assert.async()
     const request_data1 = {
-        account_type: 'c'
+        name: 'Checking',
+        type: 'c'
     }
     const request_data2 = {
-        account_type: 's'
+        name: 'Savings',
+        type: 's'
     }
 
     // open bank account
