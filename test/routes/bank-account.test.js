@@ -460,3 +460,95 @@ QUnit.test('Return transaction history on bank account', async assert =>
         assert.ok(false, `FAIL /bank-account/ with ${error.stack}`)
     }
 })
+
+QUnit.test('Change bank account name', async assert =>
+{
+    const done = assert.async()
+
+    try {
+        let response = await request(app)
+            .post('/bank-account/open')
+            .send({ name: 'Savings', type: 's' })
+            .set('x-access-token', token)
+            .expect('Content-Type', /json/)
+
+        const account = response.body.message
+        const valid_response = {
+            status: 'ok',
+            message: 'Test'
+        }
+
+        response = await request(app)
+            .put('/bank-account/name')
+            .send({ number: account, name: 'Test' })
+            .set('x-access-token', token)
+            .expect('Content-Type', /json/)
+
+        done()
+        assert.deepEqual(valid_response, response.body)
+    } catch (error) {
+        done()
+        assert.ok(false, `FAIL /bank-account/open with ${error.stack}`)
+    }
+})
+
+QUnit.test('Attempting to change bank account name without name', async assert =>
+{
+    const done = assert.async()
+
+    try {
+        let response = await request(app)
+            .post('/bank-account/open')
+            .send({ name: 'Savings', type: 's' })
+            .set('x-access-token', token)
+            .expect('Content-Type', /json/)
+
+        const account = response.body.message
+        const valid_response = {
+            status: 'ok',
+            message: 'Test'
+        }
+
+        response = await request(app)
+            .put('/bank-account/name')
+            .send({ number: account })
+            .set('x-access-token', token)
+            .expect('Content-Type', /json/)
+
+        if (response.body.status == 'ok') {
+            done()
+            assert.ok(false, 'Change went through without specifying new name')
+        } else {
+            done()
+            assert.ok(true, 'Resulted in error when not specifying new name')
+        }
+    } catch (error) {
+        done()
+        assert.ok(false, `FAIL /bank-account/open with ${error.stack}`)
+    }
+})
+
+QUnit.test('Attempting to change bank account name without account number', 
+    async assert =>
+{
+    const done = assert.async()
+
+    try {
+        response = await request(app)
+            .put('/bank-account/name')
+            .send({ name: 'Test' })
+            .set('x-access-token', token)
+            .expect('Content-Type', /json/)
+
+        if (response.body.status == 'ok') {
+            done()
+            assert.ok(false, 'Changed name without specifying account number')
+        } else {
+            done()
+            assert.ok(true, 'Resulted in error when not specifying account number')
+        }
+    } catch (error) {
+        done()
+        assert.ok(false, `FAIL /bank-account/open with ${error.stack}`)
+    }
+})
