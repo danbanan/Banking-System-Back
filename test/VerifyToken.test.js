@@ -60,7 +60,7 @@ QUnit.test("Valid token provided", async assert =>
 
     try {
         const response = await request(app)
-            .get('/users/me')
+            .get('/users/atm-location')
             .set('x-access-token', token)
             .expect('Content-Type', /json/)
         
@@ -81,11 +81,11 @@ QUnit.test("Invalid token provided", async assert =>
 
     try {
         const response = await request(app)
-            .get('/users/me')
+            .get('/users/atm-location')
             .set('x-access-token', 'some-bad-token')
             .expect('Content-Type', /json/)
         
-        if (response.body.status === 'error') {
+        if (response.body.status === 'bad-token') {
             assert.ok(true, request.body.message)
             done()
         }
@@ -98,3 +98,27 @@ QUnit.test("Invalid token provided", async assert =>
         done()
     }
 })
+
+QUnit.test("No token provided", async assert => 
+{
+    const done = assert.async()
+
+    try {
+        const response = await request(app)
+            .get('/users/atm-location')
+            .expect('Content-Type', /json/)
+        
+        if (response.body.status === 'bad-token') {
+            assert.ok(true, request.body.message)
+            done()
+        }
+        else {
+            assert.ok(false, 'No token accepted')
+            done()
+        }
+    } catch (error) {
+        assert.ok(true, 'VerifyToken function resulted in error')
+        done()
+    }
+})
+
