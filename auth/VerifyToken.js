@@ -5,7 +5,7 @@ function verifyToken(req, res, next)
     var token = req.headers['x-access-token']
     if(!token){
         res.json({
-            status: 'error',
+            status: 'bad-token',
             message: 'No token provided'
         })
     } else {
@@ -13,7 +13,7 @@ function verifyToken(req, res, next)
         {
             if(err){
                 res.json({
-                    status: 'error',
+                    status: 'bad-token',
                     message: 'Failed to authenticate token'
                 })
             } else {

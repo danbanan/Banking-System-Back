@@ -7,7 +7,6 @@ const user_account = require('../db/sql/user-account-sql')
 const customer = require('../db/sql/customer-sql')
 const VerifyToken = require('../auth/VerifyToken')
 
-
 const router = module.exports = express.Router()
 
 // Mounts middelware to router so that we can parse URL-encoded bodies (as sent
@@ -143,8 +142,7 @@ router.post('/login', (req, res) =>
     .catch(err => console.error(err.stack))
 })
 
-// testing route for VerifyToken
-router.get('/me', VerifyToken, (req, res) =>
+router.get('/atm-location', VerifyToken, (req, res) =>
 {
     res.json({
         status: 'ok',
