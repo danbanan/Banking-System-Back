@@ -19,7 +19,11 @@ const populate = {
     (50080, '317-14-4057', 'Savings','s', DEFAULT),
     (1020000, '249-89-9093', 'Checking',DEFAULT, DEFAULT),
     (1004000, '249-89-9093', 'Savings','s', DEFAULT),
-    (5000, '192-40-8735', 'Checking', DEFAULT, DEFAULT);`
+    (5000, '192-40-8735', 'Checking', DEFAULT, DEFAULT),
+    (40000, '627-10-7680', 'Checking', DEFAULT, DEFAULT),
+    (500, '388-19-3667', 'Savings', 's', DEFAULT),
+    (6000000, '608-82-2944', 'Checking', DEFAULT, DEFAULT),
+    (10, '987-65-4321', 'Checking', DEFAULT, DEFAULT);`
 }
 
 const closeAccount = `UPDATE bank_account SET isOpen = FALSE 
